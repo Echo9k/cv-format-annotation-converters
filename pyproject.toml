@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=67.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cvannotate"
+version = "0.1.0"
+description = "Convert object detection annotations across formats"
+authors = [{name = "Unknown"}]
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "typer",
+    "pillow",
+]
+
+[project.scripts]
+cvannotate = "cvannotate.cli:main"
