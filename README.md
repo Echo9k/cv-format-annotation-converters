@@ -2,23 +2,47 @@
 
 # CVAnnotate - Annotation Format Converters
 
-[![CI/CD Pipeline](https://github.com/YOUR_USERNAME/cv-format-annotation-converters/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/YOUR_USERNAME/cv-format-annotation-converters/actions)
+[![CI/CD Pipeline](https://github.com/Echo9k/cv-format-annotation-converters/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/Echo9k/cv-format-annotation-converters/actions)
 [![PyPI version](https://badge.fury.io/py/cvannotate.svg)](https://badge.fury.io/py/cvannotate)
 [![Python versions](https://img.shields.io/pypi/pyversions/cvannotate.svg)](https://pypi.org/project/cvannotate/)
-[![codecov](https://codecov.io/gh/YOUR_USERNAME/cv-format-annotation-converters/branch/main/graph/badge.svg)](https://codecov.io/gh/YOUR_USERNAME/cv-format-annotation-converters)
+[![codecov](https://codecov.io/gh/Echo9k/cv-format-annotation-converters/branch/main/graph/badge.svg)](https://codecov.io/gh/Echo9k/cv-format-annotation-converters)
 
 This repository covers all formats of annotations for Object Detection and can easily convert from one form to another using the `cvannotate` Python package.
 
 ## Installation
+
+### PyPI (Recommended)
 
 Install from PyPI:
 ```bash
 pip install cvannotate
 ```
 
-Or install from source:
+### Test PyPI (Latest Development)
+
 ```bash
-git clone https://github.com/YOUR_USERNAME/cv-format-annotation-converters.git
+pip install -i https://test.pypi.org/simple/ cvannotate
+```
+
+### Conda/Mamba
+
+Create a conda environment and install:
+```bash
+# Create environment
+conda create -n cvannotate python=3.11
+conda activate cvannotate
+
+# Install from PyPI
+pip install cvannotate
+
+# Or use environment file
+conda env create -f environment.yml
+```
+
+### From Source
+
+```bash
+git clone https://github.com/Echo9k/cv-format-annotation-converters.git
 cd cv-format-annotation-converters
 pip install -e .
 ```

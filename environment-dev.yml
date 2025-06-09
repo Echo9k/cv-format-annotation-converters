@@ -1,0 +1,23 @@
+name: cvannotate-dev
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.8
+  - pip
+  # Development tools
+  - pytest>=7.0
+  - pytest-cov
+  - black
+  - isort
+  - flake8
+  - mypy
+  - pre-commit
+  # Build tools
+  - build
+  - twine
+  - conda-build
+  # Documentation
+  - sphinx
+  - pip:
+    - cvannotate

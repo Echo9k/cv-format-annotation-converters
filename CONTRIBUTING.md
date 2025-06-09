@@ -6,7 +6,7 @@ Thank you for your interest in contributing to CVAnnotate! This document provide
 
 1. **Fork and Clone**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/cv-format-annotation-converters.git
+   git clone https://github.com/Echo9k/cv-format-annotation-converters.git
    cd cv-format-annotation-converters
    ```
 

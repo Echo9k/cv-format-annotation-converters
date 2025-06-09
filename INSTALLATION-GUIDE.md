@@ -46,7 +46,7 @@ pip install /tmp/cvannotate-0.1.0-py3-none-any.whl
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/cv-format-annotation-converters.git
+git clone https://github.com/Echo9k/cv-format-annotation-converters.git
 cd cv-format-annotation-converters
 
 # Install in development mode

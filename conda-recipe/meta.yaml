@@ -1,0 +1,58 @@
+{% set name = "cvannotate" %}
+{% set version = "0.1.0" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/cvannotate-{{ version }}.tar.gz
+  sha256: 43a0400a16a2614af0dceb146bcd0d197903d9ea8b375c5bb0065959e77c22df
+
+build:
+  number: 0
+  noarch: python
+  script: {{ PYTHON }} -m pip install . -vv
+  entry_points:
+    - cvannotate = cvannotate.cli:main
+
+requirements:
+  host:
+    - python >=3.8
+    - pip
+    - setuptools >=67.0
+  run:
+    - python >=3.8
+    - typer
+    - pillow
+
+test:
+  imports:
+    - cvannotate
+    - cvannotate.cli
+    - cvannotate.convert
+    - cvannotate.converters
+    - cvannotate.types
+  commands:
+    - cvannotate --help
+    - cvannotate convert --help
+  requires:
+    - pytest
+
+about:
+  home: https://github.com/Echo9k/cv-format-annotation-converters
+  license: MIT
+  license_family: MIT
+  license_file: LICENSE
+  summary: Convert object detection annotations across formats
+  description: |
+    CVAnnotate is a Python package that provides utilities to convert
+    object detection annotations between different formats including:
+    YOLO, Pascal VOC, and MS COCO. It includes both a command-line interface
+    and a Python API for programmatic use.
+  doc_url: https://github.com/Echo9k/cv-format-annotation-converters
+  dev_url: https://github.com/Echo9k/cv-format-annotation-converters
+
+extra:
+  recipe-maintainers:
+    - Echo9k
