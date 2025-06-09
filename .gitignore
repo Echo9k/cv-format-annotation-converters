@@ -1,0 +1,6 @@
+__pycache__/*
+tests/__pycache__/*
+cvannotate.egg-info/
+cvannotate/__pycache__
+cvannotate/converters/__pycache__
+*.ini

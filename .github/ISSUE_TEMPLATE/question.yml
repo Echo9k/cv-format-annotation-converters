@@ -1,0 +1,44 @@
+name: Question
+description: Ask a question about CVAnnotate
+title: "[QUESTION] "
+labels: ["question", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for your question! Please provide as much context as possible.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: What would you like to know?
+      placeholder: How do I...?
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Provide any relevant context for your question
+      placeholder: I'm trying to convert annotations from YOLO to VOC format and...
+    validations:
+      required: false
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: What have you tried?
+      description: What have you already attempted?
+    validations:
+      required: false
+
+  - type: input
+    id: version
+    attributes:
+      label: CVAnnotate Version
+      description: What version are you using?
+      placeholder: e.g., 0.1.0
+    validations:
+      required: false

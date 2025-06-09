@@ -1,0 +1,111 @@
+{
+    "info": {
+        "description": "COCO 2014 Dataset",
+        "url": "http://cocodataset.org",
+        "version": "1.0",
+        "year": 2014,
+        "contributor": "COCO Consortium",
+        "date_created": "2017/09/01"
+    },
+    "images": [
+        {
+            "license": 4,
+            "file_name": "COCO_val2014_000000390298.jpg",
+            "coco_url": "http://images.cocodataset.org/val2014/COCO_val2014_000000390298.jpg",
+            "height": 427,
+            "width": 640,
+            "date_captured": "2013-11-14 22:54:06",
+            "flickr_url": "http://farm5.staticflickr.com/4075/4795952434_e43b151897_z.jpg",
+            "id": 390298
+        },
+        {
+            "license": 5,
+            "file_name": "COCO_val2014_000000171962.jpg",
+            "coco_url": "http://images.cocodataset.org/val2014/COCO_val2014_000000171962.jpg",
+            "height": 480,
+            "width": 640,
+            "date_captured": "2013-11-14 23:14:47",
+            "flickr_url": "http://farm3.staticflickr.com/2756/4335939277_d72d470677_z.jpg",
+            "id": 171962
+        },
+        {
+            "license": 1,
+            "file_name": "COCO_val2014_000000370208.jpg",
+            "coco_url": "http://images.cocodataset.org/val2014/COCO_val2014_000000370208.jpg",
+            "height": 375,
+            "width": 500,
+            "date_captured": "2013-11-14 23:16:53",
+            "flickr_url": "http://farm4.staticflickr.com/3114/2576404641_15ee5d5d25_z.jpg",
+            "id": 370208
+        }
+    ],
+    "licenses": [
+        {
+            "url": "http://creativecommons.org/licenses/by-nc-sa/2.0/",
+            "id": 1,
+            "name": "Attribution-NonCommercial-ShareAlike License"
+        },
+        {
+            "url": "http://creativecommons.org/licenses/by-nc/2.0/",
+            "id": 2,
+            "name": "Attribution-NonCommercial License"
+        },
+        {
+            "url": "http://creativecommons.org/licenses/by-nc-nd/2.0/",
+            "id": 3,
+            "name": "Attribution-NonCommercial-NoDerivs License"
+        },
+        {
+            "url": "http://creativecommons.org/licenses/by/2.0/",
+            "id": 4,
+            "name": "Attribution License"
+        },
+        {
+            "url": "http://creativecommons.org/licenses/by-sa/2.0/",
+            "id": 5,
+            "name": "Attribution-ShareAlike License"
+        },
+        {
+            "url": "http://creativecommons.org/licenses/by-nd/2.0/",
+            "id": 6,
+            "name": "Attribution-NoDerivs License"
+        },
+        {
+            "url": "http://flickr.com/commons/usage/",
+            "id": 7,
+            "name": "No known copyright restrictions"
+        },
+        {
+            "url": "http://www.usa.gov/copyright.shtml",
+            "id": 8,
+            "name": "United States Government Work"
+        }
+    ],
+    "annotations": [
+        {
+            "image_id": 390298,
+            "id": 611954,
+            "caption": "A man that is standing next to a bike."
+        },
+        {
+            "image_id": 390298,
+            "id": 612542,
+            "caption": "a man walking while holding onto a bike "
+        },
+        {
+            "image_id": 390298,
+            "id": 613025,
+            "caption": "A man is seen walking next to his bicycle."
+        },
+        {
+            "image_id": 390298,
+            "id": 614603,
+            "caption": "A person walking beside a bicycle with a boat in the background."
+        },
+        {
+            "image_id": 390298,
+            "id": 619259,
+            "caption": "A man rides hits bike near a body of water"
+        }
+    ]
+}

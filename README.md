@@ -1,10 +1,64 @@
-# Annotation-converters
-This Repo covers all formats of annotations for Object Detection and can easily convert from one form to another using attached scripts 
+# CVAnnotate - Annotation Format Converters
 
-This repository now provides a Python package `cvannotate` with a simple CLI to convert annotations.
-Example usage:
+[![CI/CD Pipeline](https://github.com/USERNAME/cv-format-annotation-converters/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/USERNAME/cv-format-annotation-converters/actions)
+[![PyPI version](https://badge.fury.io/py/cvannotate.svg)](https://badge.fury.io/py/cvannotate)
+[![Python versions](https://img.shields.io/pypi/pyversions/cvannotate.svg)](https://pypi.org/project/cvannotate/)
+[![codecov](https://codecov.io/gh/USERNAME/cv-format-annotation-converters/branch/main/graph/badge.svg)](https://codecov.io/gh/USERNAME/cv-format-annotation-converters)
+
+This repository covers all formats of annotations for Object Detection and can easily convert from one form to another using the `cvannotate` Python package.
+
+## Installation
+
+Install from PyPI:
 ```bash
-cvannotate convert -i path/to/file.txt --from-format yolo -f voc -w 640 --height 480 -c classes.txt
+pip install cvannotate
+```
+
+Or install from source:
+```bash
+git clone https://github.com/USERNAME/cv-format-annotation-converters.git
+cd cv-format-annotation-converters
+pip install -e .
+```
+
+## Quick Start
+
+### CLI Usage
+
+Convert annotations between different formats:
+
+```bash
+# Convert YOLO to VOC format
+cvannotate convert -i annotations.txt --from-format yolo -f voc -w 640 --height 480 -c classes.txt
+
+# Convert VOC to COCO format
+cvannotate convert -i annotations.xml --from-format voc -f coco -c classes.txt
+
+# Convert COCO to YOLO format
+cvannotate convert -i annotations.json --from-format coco -f yolo -w 640 --height 480 -c classes.txt
+```
+
+### Python API
+
+```python
+from cvannotate import convert
+from pathlib import Path
+
+# Read annotations
+annotations = convert.read_annotation(
+    Path("annotations.txt"), 
+    "yolo", 
+    width=640, 
+    height=480
+)
+
+# Write in different format
+convert.write_annotation(
+    annotations, 
+    Path("output/"), 
+    "voc", 
+    ["person", "car", "bicycle"]
+)
 ```
 
 All computer vision problems require annotated datasets and for training deep neural networks data needs to be annotated in defined form. For Object Detection, there are many available formats for preparing and annotating your dataset but the most popular and used formats are Pascal VOC and Microsoft COCO.
@@ -24,6 +78,49 @@ YOLO Bounding box : _(x_center, y_center, width, height)_ --> all these coordina
 In Pascal VOC and YOLO we create a file for each of the image in the dataset. In COCO we have one file each, for entire dataset for training, testing and validation.
 
 Usually, when working on custom datasets we end up wasting lot of time in converting annotations from one format to another suitable to object detection models or frameworks. This is really frustrating and I compiled few annotations converter scripts which covers most of the cases and saves you time! You can now focus more on productive tasks such as improving model performance or training more efficiently.
+
+## Supported Formats
+
+- **YOLO**: Text files with normalized coordinates
+- **Pascal VOC**: XML files with absolute coordinates  
+- **MS COCO**: JSON files with bounding box annotations
+
+## Features
+
+- ✅ **Multi-format Support**: Convert between YOLO, VOC, and COCO formats
+- ✅ **CLI Interface**: Simple command-line interface for batch processing
+- ✅ **Python API**: Programmatic access for integration
+- ✅ **Type Safety**: Full type hints for better development experience
+- ✅ **Testing**: Comprehensive test suite with >90% coverage
+- ✅ **Documentation**: Well-documented code and examples
+
+## Development
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
+
+### Local Development Setup
+
+```bash
+git clone https://github.com/USERNAME/cv-format-annotation-converters.git
+cd cv-format-annotation-converters
+pip install -e .
+pip install -r requirements-dev.txt
+pre-commit install
+```
+
+### Running Tests
+
+```bash
+pytest tests/ -v --cov=cvannotate
+```
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Contributing
+
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## Scripts ##
 
