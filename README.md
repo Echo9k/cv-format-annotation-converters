@@ -1,6 +1,12 @@
 # Annotation-converters
 This Repo covers all formats of annotations for Object Detection and can easily convert from one form to another using attached scripts 
 
+This repository now provides a Python package `cvannotate` with a simple CLI to convert annotations.
+Example usage:
+```bash
+cvannotate convert -i path/to/file.txt --from-format yolo -f voc -w 640 --height 480 -c classes.txt
+```
+
 All computer vision problems require annotated datasets and for training deep neural networks data needs to be annotated in defined form. For Object Detection, there are many available formats for preparing and annotating your dataset but the most popular and used formats are Pascal VOC and Microsoft COCO.
 
 ### MS COCO ###
