@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cvannotate"
+version = "0.1.0"
+description = "Annotation format converters"
+authors = [{name="Example", email="example@example.com"}]
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "typer>=0.9",
+    "Pillow",
+    "lxml",
+]
+
+[project.scripts]
+cvannotate = "cvannotate.cli:app"

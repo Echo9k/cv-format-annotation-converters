@@ -49,8 +49,19 @@ Usually, when working on custom datasets we end up wasting lot of time in conver
       
    myConverter = Converter()
    #returns a Converter Object
-   myConverter.convertJsonToPascal("data.json")
-   #Converts Json to PascalVOC XML and saves the XML file to the related file path
-   ```
+  myConverter.convertJsonToPascal("data.json")
+  #Converts Json to PascalVOC XML and saves the XML file to the related file path
+  ```
+
+## Development
+
+Install the package in editable mode and run the tests using `pytest`:
+
+```
+pip install -e .
+pytest -q
+```
+
+Continuous integration runs the same tests on pushes and pull requests.
    
    
