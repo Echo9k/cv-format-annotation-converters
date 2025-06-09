@@ -162,7 +162,7 @@ jobs:
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         repository-url: https://test.pypi.org/legacy/
-        password: ${{ secrets.PYPI }}
+        password: ${{ secrets.TESTPYPI_API_KEY }}
         skip-existing: true
 
   publish-pypi:
@@ -190,7 +190,7 @@ jobs:
     - name: Publish to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
-        password: ${{ secrets.PYPI }}
+        password: ${{ secrets.PYPI_API_KEY }}
 
   create-release:
     runs-on: ubuntu-latest
