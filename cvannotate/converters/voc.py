@@ -1,10 +1,13 @@
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
+import xml.etree.ElementTree as StandardET  # nosec B405 - only used for writing, not parsing
 from pathlib import Path
 from typing import Iterable
+
 from ..types import ImageAnnotation, BoundingBox
 
 
 def read_voc(path: Path) -> ImageAnnotation:
+    # Use defusedxml for parsing (security)
     tree = ET.parse(path)
     root = tree.getroot()
     size = root.find("size")
@@ -25,22 +28,23 @@ def read_voc(path: Path) -> ImageAnnotation:
 
 
 def write_voc(ann: ImageAnnotation, path: Path, class_map: Iterable[str]):
-    root = ET.Element("annotation")
-    ET.SubElement(root, "filename").text = ann.filename
-    size = ET.SubElement(root, "size")
-    ET.SubElement(size, "width").text = str(ann.width)
-    ET.SubElement(size, "height").text = str(ann.height)
-    ET.SubElement(size, "depth").text = "3"
+    # Use standard ElementTree for writing (creation)
+    root = StandardET.Element("annotation")
+    StandardET.SubElement(root, "filename").text = ann.filename
+    size = StandardET.SubElement(root, "size")
+    StandardET.SubElement(size, "width").text = str(ann.width)
+    StandardET.SubElement(size, "height").text = str(ann.height)
+    StandardET.SubElement(size, "depth").text = "3"
 
     for box in ann.boxes:
-        obj = ET.SubElement(root, "object")
-        name = class_map[box.class_id]
-        ET.SubElement(obj, "name").text = name
-        bndbox = ET.SubElement(obj, "bndbox")
-        ET.SubElement(bndbox, "xmin").text = str(int(box.xmin))
-        ET.SubElement(bndbox, "ymin").text = str(int(box.ymin))
-        ET.SubElement(bndbox, "xmax").text = str(int(box.xmax))
-        ET.SubElement(bndbox, "ymax").text = str(int(box.ymax))
-    tree = ET.ElementTree(root)
+        obj = StandardET.SubElement(root, "object")
+        name = list(class_map)[box.class_id]
+        StandardET.SubElement(obj, "name").text = name
+        bndbox = StandardET.SubElement(obj, "bndbox")
+        StandardET.SubElement(bndbox, "xmin").text = str(int(box.xmin))
+        StandardET.SubElement(bndbox, "ymin").text = str(int(box.ymin))
+        StandardET.SubElement(bndbox, "xmax").text = str(int(box.xmax))
+        StandardET.SubElement(bndbox, "ymax").text = str(int(box.ymax))
+    tree = StandardET.ElementTree(root)
     path.parent.mkdir(parents=True, exist_ok=True)
     tree.write(path)
