@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List
 
+
 @dataclass
 class BoundingBox:
     class_id: int
@@ -8,6 +9,7 @@ class BoundingBox:
     ymin: float
     xmax: float
     ymax: float
+
 
 @dataclass
 class ImageAnnotation:

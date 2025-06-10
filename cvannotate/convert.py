@@ -5,7 +5,9 @@ from .types import ImageAnnotation
 from .converters import yolo, voc, coco
 
 
-def read_annotation(path: Path, fmt: str, width: int = None, height: int = None) -> List[ImageAnnotation]:
+def read_annotation(
+    path: Path, fmt: str, width: int = None, height: int = None
+) -> List[ImageAnnotation]:
     fmt = fmt.lower()
     if fmt == "yolo":
         if width is None or height is None:
@@ -20,7 +22,9 @@ def read_annotation(path: Path, fmt: str, width: int = None, height: int = None)
     raise ValueError(f"Unsupported format {fmt}")
 
 
-def write_annotation(anns: List[ImageAnnotation], out_dir: Path, fmt: str, class_map: Iterable[str]):
+def write_annotation(
+    anns: List[ImageAnnotation], out_dir: Path, fmt: str, class_map: Iterable[str]
+):
     fmt = fmt.lower()
     out_dir.mkdir(parents=True, exist_ok=True)
     if fmt == "yolo":
