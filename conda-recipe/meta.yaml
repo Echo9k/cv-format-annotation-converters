@@ -6,13 +6,11 @@ package:
   version: {{ version }}
 
 source:
-  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/cvannotate-{{ version }}.tar.gz
-  sha256: 43a0400a16a2614af0dceb146bcd0d197903d9ea8b375c5bb0065959e77c22df
+  path: ../
 
 build:
   number: 0
   noarch: python
-  script: {{ PYTHON }} -m pip install . -vv
   entry_points:
     - cvannotate = cvannotate.cli:main
 
