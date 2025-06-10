@@ -44,11 +44,7 @@ Replace `YOUR_USERNAME` in these files with your actual GitHub username:
 
 For example, if your username is `johndoe`, change:
 ```
-https://github.com/YOUR_USERNAME/cv-format-annotation-converters
-```
-to:
-```
-https://github.com/johndoe/cv-format-annotation-converters
+https://github.com/Echo9k/cv-format-annotation-converters
 ```
 
 ### 3. Test the Pipeline

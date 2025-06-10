@@ -28,7 +28,7 @@ else
     fi
     
     # Clone and install from source
-    git clone https://github.com/YOUR_USERNAME/cv-format-annotation-converters.git
+    git clone https://github.com/Echo9k/cv-format-annotation-converters.git
     cd cv-format-annotation-converters
     pip install .
     cd ..
