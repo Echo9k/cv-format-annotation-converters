@@ -1,8 +1,8 @@
 from pathlib import Path
 from typing import Iterable, List
 
+from .converters import coco, voc, yolo
 from .types import ImageAnnotation
-from .converters import yolo, voc, coco
 
 
 def read_annotation(

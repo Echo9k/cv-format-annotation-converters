@@ -1,3 +1,3 @@
-from . import yolo, voc, coco
+from . import coco, voc, yolo
 
 __all__ = ["yolo", "voc", "coco"]

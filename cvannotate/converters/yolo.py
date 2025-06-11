@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Iterable, List
 
-from ..types import ImageAnnotation, BoundingBox
+from ..types import BoundingBox, ImageAnnotation
 
 
 def read_yolo(path: Path, width: int, height: int) -> ImageAnnotation:
