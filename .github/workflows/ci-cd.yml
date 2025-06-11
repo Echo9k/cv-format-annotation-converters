@@ -290,10 +290,13 @@ jobs:
       run: |
         echo "Uploading packages to test channel..."
         
+        # Set the token for anaconda client
+        export ANACONDA_API_TOKEN="${{ secrets.ANACONDA_API_TOKEN }}"
+        
         # Find and upload all conda packages to test label
         find dist-conda/ -name "*.tar.bz2" -o -name "*.conda" | while read package; do
           echo "Uploading: $package"
-          anaconda upload "$package" --label test --force --no-progress --token "$ANACONDA_API_TOKEN"
+          anaconda upload "$package" --label test --force --no-progress
         done
 
   publish-conda-production:
@@ -329,10 +332,13 @@ jobs:
       run: |
         echo "Uploading packages to main channel..."
         
+        # Set the token for anaconda client
+        export ANACONDA_API_TOKEN="${{ secrets.ANACONDA_API_TOKEN }}"
+        
         # Find and upload all conda packages to main channel
         find dist-conda/ -name "*.tar.bz2" -o -name "*.conda" | while read package; do
           echo "Uploading: $package"
-          anaconda upload "$package" --force --no-progress --token "$ANACONDA_API_TOKEN"
+          anaconda upload "$package" --force --no-progress
         done
 
   create-release:
