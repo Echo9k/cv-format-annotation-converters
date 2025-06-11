@@ -285,19 +285,16 @@ jobs:
 
     - name: Upload to anaconda.org test channel
       shell: bash -l {0}
+      env:
+        ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_API_TOKEN }}
       run: |
-        # Login to anaconda.org
-        echo "${{ secrets.ANACONDA_API_TOKEN }}" | anaconda login --username ${{ secrets.ANACONDA_USERNAME }} --stdin
-        
         echo "Uploading packages to test channel..."
         
         # Find and upload all conda packages to test label
         find dist-conda/ -name "*.tar.bz2" -o -name "*.conda" | while read package; do
           echo "Uploading: $package"
-          anaconda upload "$package" --label test --force --no-progress
+          anaconda upload "$package" --label test --force --no-progress --token "$ANACONDA_API_TOKEN"
         done
-        
-        anaconda logout
 
   publish-conda-production:
     runs-on: ubuntu-latest
@@ -327,19 +324,16 @@ jobs:
 
     - name: Upload to anaconda.org main channel
       shell: bash -l {0}
+      env:
+        ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_API_TOKEN }}
       run: |
-        # Login to anaconda.org
-        echo "${{ secrets.ANACONDA_API_TOKEN }}" | anaconda login --username ${{ secrets.ANACONDA_USERNAME }} --stdin
-        
         echo "Uploading packages to main channel..."
         
         # Find and upload all conda packages to main channel
         find dist-conda/ -name "*.tar.bz2" -o -name "*.conda" | while read package; do
           echo "Uploading: $package"
-          anaconda upload "$package" --force --no-progress
+          anaconda upload "$package" --force --no-progress --token "$ANACONDA_API_TOKEN"
         done
-        
-        anaconda logout
 
   create-release:
     runs-on: ubuntu-latest
