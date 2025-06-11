@@ -1,9 +1,10 @@
-import defusedxml.ElementTree as ET
 import xml.etree.ElementTree as StandardET  # nosec B405 - only used for writing, not parsing
 from pathlib import Path
 from typing import Iterable
 
-from ..types import ImageAnnotation, BoundingBox
+import defusedxml.ElementTree as ET
+
+from ..types import BoundingBox, ImageAnnotation
 
 
 def read_voc(path: Path) -> ImageAnnotation:

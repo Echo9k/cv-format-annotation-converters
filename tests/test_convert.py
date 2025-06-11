@@ -1,8 +1,10 @@
-from pathlib import Path
 import json
+from pathlib import Path
+
+from typer.testing import CliRunner
+
 from cvannotate import convert
 from cvannotate.cli import app
-from typer.testing import CliRunner
 
 DATA = Path(__file__).parent / "data"
 

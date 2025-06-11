@@ -1,8 +1,8 @@
 import json
 from pathlib import Path
-from typing import Iterable, Dict, List
+from typing import Dict, Iterable, List
 
-from ..types import ImageAnnotation, BoundingBox
+from ..types import BoundingBox, ImageAnnotation
 
 
 def read_coco(path: Path) -> List[ImageAnnotation]:
