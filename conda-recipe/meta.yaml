@@ -1,6 +1,8 @@
+{% set version = "0.1.0" %}
+
 package:
   name: cvannotate
-  version: 0.1.0
+  version: {{ version }}
 
 source:
   path: ../
@@ -20,7 +22,6 @@ requirements:
     - python >=3.8
     - typer
     - pillow
-    - defusedxml
 
 test:
   imports:

@@ -4,3 +4,5 @@ cvannotate.egg-info/
 cvannotate/__pycache__
 cvannotate/converters/__pycache__
 *.ini
+dist-conda/
+dist-conda-test/

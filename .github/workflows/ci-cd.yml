@@ -18,12 +18,12 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
 
     - name: Cache pip dependencies
-      uses: actions/cache@v4
+      uses: actions/cache@v3
       with:
         path: ~/.cache/pip
         key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml', '**/requirements*.txt') }}
@@ -42,7 +42,7 @@ jobs:
 
     - name: Upload coverage to Codecov
       if: matrix.python-version == '3.11'
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v3
       with:
         file: ./coverage.xml
         flags: unittests
@@ -55,7 +55,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v4
       with:
         python-version: '3.11'
 
@@ -89,7 +89,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v4
       with:
         python-version: '3.11'
 
@@ -114,7 +114,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v4
       with:
         python-version: '3.11'
 
@@ -145,7 +145,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v4
       with:
         python-version: '3.11'
 
@@ -174,7 +174,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v4
       with:
         python-version: '3.11'
 
@@ -241,18 +241,33 @@ jobs:
 
     - name: Build conda package
       shell: bash -l {0}
+      timeout-minutes: 30
       run: |
         # Create output directory
         mkdir -p dist-conda
         
-        # Build the package
-        conda-build conda-recipe/ --output-folder dist-conda/
+        # Verify meta.yaml is valid
+        echo "Checking conda recipe..."
+        conda render conda-recipe/ || echo "Warning: Recipe rendering failed"
+        
+        # Build the package with timeout protection
+        echo "Building conda package..."
+        conda-build conda-recipe/ --output-folder dist-conda/ --no-anaconda-upload
         
         echo "Built packages:"
         find dist-conda/ -name "*.tar.bz2" -o -name "*.conda" | head -10
+        
+        # Verify at least one package was built
+        PACKAGE_COUNT=$(find dist-conda/ -name "*.tar.bz2" -o -name "*.conda" | wc -l)
+        if [ "$PACKAGE_COUNT" -eq 0 ]; then
+          echo "❌ No conda packages were built!"
+          exit 1
+        else
+          echo "✅ Built $PACKAGE_COUNT conda package(s)"
+        fi
 
     - name: Upload conda package artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
         name: conda-packages-${{ matrix.os }}
         path: dist-conda/
@@ -281,23 +296,56 @@ jobs:
 
     - name: Install anaconda-client
       shell: bash -l {0}
-      run: conda install anaconda-client
+      run: |
+        conda install anaconda-client -c conda-forge
+        anaconda --version
 
     - name: Upload to anaconda.org test channel
       shell: bash -l {0}
-      env:
-        ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_API_TOKEN }}
       run: |
+        # Login to anaconda.org
+        echo "${{ secrets.ANACONDA_API_TOKEN }}" | anaconda login --username ${{ secrets.ANACONDA_USERNAME }} --stdin
+        
         echo "Uploading packages to test channel..."
         
-        # Set the token for anaconda client
-        export ANACONDA_API_TOKEN="${{ secrets.ANACONDA_API_TOKEN }}"
+        # List all found packages first
+        echo "Found packages:"
+        find dist-conda/ -name "*.tar.bz2" -o -name "*.conda" | sort
         
-        # Find and upload all conda packages to test label
+        # Verify packages are valid before uploading
         find dist-conda/ -name "*.tar.bz2" -o -name "*.conda" | while read package; do
+          echo "=== Processing: $package ==="
+          
+          # Check file size and permissions
+          ls -la "$package"
+          
+          # Basic file validation
+          if [ ! -s "$package" ]; then
+            echo "❌ Package file is empty: $package"
+            exit 1
+          fi
+          
+          # Try to verify the package structure
+          if [[ "$package" == *.conda ]]; then
+            echo "Checking conda package metadata..."
+            # Use conda to verify the package
+            if ! conda verify "$package" 2>/dev/null; then
+              echo "⚠️  Warning: Package verification failed, but continuing..."
+            fi
+          fi
+          
           echo "Uploading: $package"
-          anaconda upload "$package" --label test --force --no-progress
+          if anaconda upload "$package" --label test --force --no-progress; then
+            echo "✅ Successfully uploaded: $package"
+          else
+            echo "❌ Failed to upload: $package"
+            # Try once more with verbose output for debugging
+            echo "Retrying with verbose output..."
+            anaconda upload "$package" --label test --force || exit 1
+          fi
         done
+        
+        anaconda logout
 
   publish-conda-production:
     runs-on: ubuntu-latest
@@ -323,23 +371,56 @@ jobs:
 
     - name: Install anaconda-client
       shell: bash -l {0}
-      run: conda install anaconda-client
+      run: |
+        conda install anaconda-client -c conda-forge
+        anaconda --version
 
     - name: Upload to anaconda.org main channel
       shell: bash -l {0}
-      env:
-        ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_API_TOKEN }}
       run: |
+        # Login to anaconda.org
+        echo "${{ secrets.ANACONDA_API_TOKEN }}" | anaconda login --username ${{ secrets.ANACONDA_USERNAME }} --stdin
+        
         echo "Uploading packages to main channel..."
         
-        # Set the token for anaconda client
-        export ANACONDA_API_TOKEN="${{ secrets.ANACONDA_API_TOKEN }}"
+        # List all found packages first
+        echo "Found packages:"
+        find dist-conda/ -name "*.tar.bz2" -o -name "*.conda" | sort
         
-        # Find and upload all conda packages to main channel
+        # Verify packages are valid before uploading
         find dist-conda/ -name "*.tar.bz2" -o -name "*.conda" | while read package; do
+          echo "=== Processing: $package ==="
+          
+          # Check file size and permissions
+          ls -la "$package"
+          
+          # Basic file validation
+          if [ ! -s "$package" ]; then
+            echo "❌ Package file is empty: $package"
+            exit 1
+          fi
+          
+          # Try to verify the package structure
+          if [[ "$package" == *.conda ]]; then
+            echo "Checking conda package metadata..."
+            # Use conda to verify the package
+            if ! conda verify "$package" 2>/dev/null; then
+              echo "⚠️  Warning: Package verification failed, but continuing..."
+            fi
+          fi
+          
           echo "Uploading: $package"
-          anaconda upload "$package" --force --no-progress
+          if anaconda upload "$package" --force --no-progress; then
+            echo "✅ Successfully uploaded: $package"
+          else
+            echo "❌ Failed to upload: $package"
+            # Try once more with verbose output for debugging
+            echo "Retrying with verbose output..."
+            anaconda upload "$package" --force || exit 1
+          fi
         done
+        
+        anaconda logout
 
   create-release:
     runs-on: ubuntu-latest
@@ -349,10 +430,12 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Create Release
-      uses: softprops/action-gh-release@v1
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ github.ref_name }}
-        name: Release ${{ github.ref_name }}
+        release_name: Release ${{ github.ref_name }}
         draft: false
         prerelease: false
         body: |
