@@ -26,33 +26,6 @@ cv-format-annotation-converters/
 └── RELEASE.md                 # Release documentation
 ```
 
-## 🗑️ Files Removed
-
-### Deprecated Documentation
-- `CONDA-UPLOAD-FIX.md`
-- `CONDA-UPLOAD-COMPLETE.md` 
-- `CONDA-UPLOAD-READY.md`
-- `SETUP-INSTRUCTIONS.md`
-- `INSTALLATION-GUIDE.md`
-- `FINAL-DISTRIBUTION-GUIDE.md`
-
-### Legacy Python Scripts
-- `cocoGT_to_Yolo.py`
-- `gt_yolo2json.py`
-- `JSON_to_txt.py`
-- `pred_yolo2json.py`
-- `voc2coco.py`
-- `XML_to_JSON.py`
-- `yolo_to_voc.py`
-
-### Build Artifacts & Backups
-- All `*.bak` and `*backup` files in conda-recipe/
-- `build-conda-ci-test.sh`
-- `build-conda.sh`
-- `conda_build.log`
-- `cvannotate-0.1.0.tar.gz`
-- `bandit-report.json`
-
 ## ✅ Maintained Separation of Concerns
 
 ### Build & CI/CD

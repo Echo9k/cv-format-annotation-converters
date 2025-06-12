@@ -6,6 +6,7 @@ cvannotate/converters/__pycache__
 *.ini
 dist-conda/
 dist-conda-test/
+venv/
 bandit-report.json
 conda-recipe/meta.yaml.bak*
 *github-test-backup
