@@ -20,6 +20,24 @@ This directory contains utility scripts for development, testing, and CI/CD oper
 
 **Output**: `dist-conda/noarch/cvannotate-*.conda`
 
+### `build-conda-ci-simple.sh`
+**Purpose**: Cross-platform conda build script for GitHub Actions.
+
+**Usage**:
+```bash
+./scripts/build-conda-ci-simple.sh
+```
+
+**Features**:
+- Cross-platform path detection (Linux, macOS, Windows)
+- Uses `conda-build --output` for accurate location detection
+- Comprehensive search across multiple conda directories
+- Optimized for GitHub Actions environments
+
+**Output**: `dist-conda/noarch/cvannotate-*.conda`
+
+**Note**: Currently used in CI/CD pipeline for better platform compatibility.
+
 ## Test/Validation Scripts
 
 ### `test-github-actions-conda.sh`

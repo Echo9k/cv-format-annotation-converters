@@ -243,8 +243,8 @@ jobs:
       shell: bash -l {0}
       timeout-minutes: 30
       run: |
-        # Use the dedicated build script that handles conda build issues
-        ./scripts/build-conda-ci.sh
+        # Use the cross-platform build script that handles path detection
+        ./scripts/build-conda-ci-simple.sh
 
     - name: Upload conda package artifacts
       uses: actions/upload-artifact@v4
