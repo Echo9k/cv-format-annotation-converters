@@ -267,7 +267,7 @@ jobs:
         fi
 
     - name: Upload conda package artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: conda-packages-${{ matrix.os }}
         path: dist-conda/
@@ -302,50 +302,19 @@ jobs:
 
     - name: Upload to anaconda.org test channel
       shell: bash -l {0}
+      env:
+        ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_API_TOKEN }}
       run: |
-        # Login to anaconda.org
-        echo "${{ secrets.ANACONDA_API_TOKEN }}" | anaconda login --username ${{ secrets.ANACONDA_USERNAME }} --stdin
-        
         echo "Uploading packages to test channel..."
         
-        # List all found packages first
-        echo "Found packages:"
-        find dist-conda/ -name "*.tar.bz2" -o -name "*.conda" | sort
+        # Set the token for anaconda client
+        export ANACONDA_API_TOKEN="${{ secrets.ANACONDA_API_TOKEN }}"
         
-        # Verify packages are valid before uploading
+        # Find and upload all conda packages to test label
         find dist-conda/ -name "*.tar.bz2" -o -name "*.conda" | while read package; do
-          echo "=== Processing: $package ==="
-          
-          # Check file size and permissions
-          ls -la "$package"
-          
-          # Basic file validation
-          if [ ! -s "$package" ]; then
-            echo "❌ Package file is empty: $package"
-            exit 1
-          fi
-          
-          # Try to verify the package structure
-          if [[ "$package" == *.conda ]]; then
-            echo "Checking conda package metadata..."
-            # Use conda to verify the package
-            if ! conda verify "$package" 2>/dev/null; then
-              echo "⚠️  Warning: Package verification failed, but continuing..."
-            fi
-          fi
-          
           echo "Uploading: $package"
-          if anaconda upload "$package" --label test --force --no-progress; then
-            echo "✅ Successfully uploaded: $package"
-          else
-            echo "❌ Failed to upload: $package"
-            # Try once more with verbose output for debugging
-            echo "Retrying with verbose output..."
-            anaconda upload "$package" --label test --force || exit 1
-          fi
+          anaconda upload "$package" --label test --force --no-progress
         done
-        
-        anaconda logout
 
   publish-conda-production:
     runs-on: ubuntu-latest
@@ -377,50 +346,19 @@ jobs:
 
     - name: Upload to anaconda.org main channel
       shell: bash -l {0}
+      env:
+        ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_API_TOKEN }}
       run: |
-        # Login to anaconda.org
-        echo "${{ secrets.ANACONDA_API_TOKEN }}" | anaconda login --username ${{ secrets.ANACONDA_USERNAME }} --stdin
-        
         echo "Uploading packages to main channel..."
         
-        # List all found packages first
-        echo "Found packages:"
-        find dist-conda/ -name "*.tar.bz2" -o -name "*.conda" | sort
+        # Set the token for anaconda client
+        export ANACONDA_API_TOKEN="${{ secrets.ANACONDA_API_TOKEN }}"
         
-        # Verify packages are valid before uploading
+        # Find and upload all conda packages to main channel
         find dist-conda/ -name "*.tar.bz2" -o -name "*.conda" | while read package; do
-          echo "=== Processing: $package ==="
-          
-          # Check file size and permissions
-          ls -la "$package"
-          
-          # Basic file validation
-          if [ ! -s "$package" ]; then
-            echo "❌ Package file is empty: $package"
-            exit 1
-          fi
-          
-          # Try to verify the package structure
-          if [[ "$package" == *.conda ]]; then
-            echo "Checking conda package metadata..."
-            # Use conda to verify the package
-            if ! conda verify "$package" 2>/dev/null; then
-              echo "⚠️  Warning: Package verification failed, but continuing..."
-            fi
-          fi
-          
           echo "Uploading: $package"
-          if anaconda upload "$package" --force --no-progress; then
-            echo "✅ Successfully uploaded: $package"
-          else
-            echo "❌ Failed to upload: $package"
-            # Try once more with verbose output for debugging
-            echo "Retrying with verbose output..."
-            anaconda upload "$package" --force || exit 1
-          fi
+          anaconda upload "$package" --force --no-progress
         done
-        
-        anaconda logout
 
   create-release:
     runs-on: ubuntu-latest

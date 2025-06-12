@@ -1,8 +1,6 @@
-{% set version = "0.1.0" %}
-
 package:
   name: cvannotate
-  version: {{ version }}
+  version: 0.1.0
 
 source:
   path: ../
