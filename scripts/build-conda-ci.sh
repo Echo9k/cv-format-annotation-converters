@@ -1,4 +1,20 @@
 #!/bin/bash
+################################################################################
+# Conda Package CI Build Script
+#
+# Purpose: Builds conda package with workarounds for conda-build limitations
+#          Used in both local development and CI/CD pipeline.
+#
+# Features:
+# - Handles conda-build output directory issues
+# - Provides robust error handling and cleanup
+# - Creates proper directory structure for artifacts
+# - Validates successful package creation
+#
+# Usage: ./scripts/build-conda-ci.sh
+#
+# Output: dist-conda/noarch/cvannotate-*.conda
+################################################################################
 
 # Build conda package and copy to dist-conda directory
 # This script works around issues with conda-build --output-folder
