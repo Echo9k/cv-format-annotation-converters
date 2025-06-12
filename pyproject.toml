@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cvannotate"
-version = "0.1.0"
+version = "1.0.0"
 description = "Convert object detection annotations across formats"
 authors = [{name = "Guillermo Alcantara"}]
 readme = "README.md"

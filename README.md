@@ -7,17 +7,20 @@
 
 This repository covers all formats of annotations for Object Detection and can easily convert from one form to another using the `cvannotate` Python package.
 
+> **✨ v1.0.0 Stable Release** - Production-ready with comprehensive testing and CI/CD pipeline.
+
 ## Installation
 
 ### PyPI (Recommended)
 
-Install from PyPI:
+Install the stable release from PyPI:
 ```bash
 pip install cvannotate
 ```
 
-### Test PyPI (Latest Development)
+### Development Version
 
+For the latest development features:
 ```bash
 pip install -i https://test.pypi.org/simple/ cvannotate
 ```
@@ -49,13 +52,11 @@ pip install -e .
 
 ### CLI Usage
 
-Convert annotations between different formats:
-
 ```bash
 # Convert YOLO to VOC format
 cvannotate convert -i annotations.txt --from-format yolo -f voc -w 640 --height 480 -c classes.txt
 
-# Convert VOC to COCO format
+# Convert VOC to COCO format  
 cvannotate convert -i annotations.xml --from-format voc -f coco -c classes.txt
 
 # Convert COCO to YOLO format
@@ -68,21 +69,43 @@ cvannotate convert -i annotations.json --from-format coco -f yolo -w 640 --heigh
 from cvannotate import convert
 from pathlib import Path
 
-# Read annotations
+# Example 1: YOLO → VOC conversion
 annotations = convert.read_annotation(
-    Path("annotations.txt"), 
+    Path("data/labels.txt"), 
     "yolo", 
     width=640, 
     height=480
 )
-
-# Write in different format
 convert.write_annotation(
     annotations, 
     Path("output/"), 
     "voc", 
     ["person", "car", "bicycle"]
 )
+
+# Example 2: Batch conversion
+import os
+from cvannotate.cli import main
+
+# Convert entire directory
+os.system("cvannotate convert -i dataset/labels/ --from-format yolo -f coco -c classes.txt")
+```
+
+## Common Use Cases
+
+### Dataset Conversion for Training
+```bash
+# Convert YOLO dataset to COCO for frameworks like Detectron2
+cvannotate convert -i train.txt --from-format yolo -f coco -w 640 --height 480 -c classes.txt
+
+# Convert VOC XML files to YOLO for frameworks like YOLOv5/v8  
+cvannotate convert -i annotations.xml --from-format voc -f yolo -w 416 --height 416 -c classes.txt
+```
+
+### Validation and Testing
+```bash
+# Convert predictions back to original format for evaluation
+cvannotate convert -i predictions.json --from-format coco -f yolo -w 640 --height 480 -c classes.txt
 ```
 
 ## Features
@@ -111,14 +134,14 @@ convert.write_annotation(
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Development
+## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
 
 ### Local Development Setup
 
 ```bash
-git clone https://github.com/USERNAME/cv-format-annotation-converters.git
+git clone https://github.com/Echo9k/cv-format-annotation-converters.git
 cd cv-format-annotation-converters
 pip install -e .
 pip install -r requirements-dev.txt
@@ -130,13 +153,3 @@ pre-commit install
 ```bash
 pytest tests/ -v --cov=cvannotate
 ```
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Contributing
-
-Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-## Scripts ##
