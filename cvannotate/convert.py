@@ -1,4 +1,5 @@
 """Core conversion functions for annotation formats."""
+
 from pathlib import Path
 from typing import Iterable, List
 
@@ -10,13 +11,13 @@ def read_annotation(
     path: Path, fmt: str, width: int = None, height: int = None
 ) -> List[ImageAnnotation]:
     """Read annotation from file in specified format.
-    
+
     Args:
         path: Path to annotation file
         fmt: Format ('yolo', 'voc', 'coco')
         width: Image width (required for YOLO)
         height: Image height (required for YOLO)
-        
+
     Returns:
         List of ImageAnnotation objects
     """
@@ -38,7 +39,7 @@ def write_annotation(
     anns: List[ImageAnnotation], out_dir: Path, fmt: str, class_map: Iterable[str]
 ):
     """Write annotations to files in specified format.
-    
+
     Args:
         anns: List of ImageAnnotation objects to write
         out_dir: Output directory
