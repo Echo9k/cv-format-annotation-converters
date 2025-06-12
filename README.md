@@ -2,8 +2,12 @@
 
 [![CI/CD Pipeline](https://github.com/Echo9k/cv-format-annotation-converters/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/Echo9k/cv-format-annotation-converters/actions)
 [![PyPI version](https://badge.fury.io/py/cvannotate.svg)](https://badge.fury.io/py/cvannotate)
-[![Python versions](https://img.shields.io/pypi/pyversions/cvannotate.svg)](https://pypi.org/project/cvannotate/)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![codecov](https://codecov.io/gh/Echo9k/cv-format-annotation-converters/branch/main/graph/badge.svg)](https://codecov.io/gh/Echo9k/cv-format-annotation-converters)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub release](https://img.shields.io/github/v/release/Echo9k/cv-format-annotation-converters)](https://github.com/Echo9k/cv-format-annotation-converters/releases)
+[![GitHub CI](https://github.com/Echo9k/cv-format-annotation-converters/workflows/CI/badge.svg)](https://github.com/Echo9k/cv-format-annotation-converters/actions)
+[![Conda Version](https://img.shields.io/conda/vn/conda-forge/cvannotate.svg)](https://anaconda.org/conda-forge/cvannotate)
 
 This repository covers all formats of annotations for Object Detection and can easily convert from one form to another using the `cvannotate` Python package.
 
