@@ -1,0 +1,39 @@
+package:
+  name: cvannotate
+  version: 0.1.0
+
+source:
+  path: ../
+
+build:
+  number: 0
+  noarch: python
+  script: python -m pip install . -vv --no-deps --ignore-installed
+  entry_points:
+    - cvannotate = cvannotate.cli:main
+
+requirements:
+  host:
+    - python >=3.8
+    - pip
+    - setuptools
+  run:
+    - python >=3.8
+    - typer
+    - pillow
+    - defusedxml
+
+test:
+  imports:
+    - cvannotate
+  commands:
+    - cvannotate --help
+
+about:
+  home: https://github.com/Echo9k/cv-format-annotation-converters
+  license: MIT
+  summary: Convert object detection annotations across formats
+
+extra:
+  recipe-maintainers:
+    - Echo9k

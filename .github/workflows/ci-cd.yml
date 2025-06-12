@@ -243,28 +243,8 @@ jobs:
       shell: bash -l {0}
       timeout-minutes: 30
       run: |
-        # Create output directory
-        mkdir -p dist-conda
-        
-        # Verify meta.yaml is valid
-        echo "Checking conda recipe..."
-        conda render conda-recipe/ || echo "Warning: Recipe rendering failed"
-        
-        # Build the package with timeout protection
-        echo "Building conda package..."
-        conda-build conda-recipe/ --output-folder dist-conda/ --no-anaconda-upload
-        
-        echo "Built packages:"
-        find dist-conda/ -name "*.tar.bz2" -o -name "*.conda" | head -10
-        
-        # Verify at least one package was built
-        PACKAGE_COUNT=$(find dist-conda/ -name "*.tar.bz2" -o -name "*.conda" | wc -l)
-        if [ "$PACKAGE_COUNT" -eq 0 ]; then
-          echo "❌ No conda packages were built!"
-          exit 1
-        else
-          echo "✅ Built $PACKAGE_COUNT conda package(s)"
-        fi
+        # Use the dedicated build script that handles conda build issues
+        ./build-conda-ci.sh
 
     - name: Upload conda package artifacts
       uses: actions/upload-artifact@v4
@@ -310,10 +290,22 @@ jobs:
         # Set the token for anaconda client
         export ANACONDA_API_TOKEN="${{ secrets.ANACONDA_API_TOKEN }}"
         
-        # Find and upload all conda packages to test label
-        find dist-conda/ -name "*.tar.bz2" -o -name "*.conda" | while read package; do
-          echo "Uploading: $package"
-          anaconda upload "$package" --label test --force --no-progress
+        # List packages to upload
+        echo "Found packages:"
+        find dist-conda/ -name "*.tar.bz2" -o -name "*.conda"
+        
+        # Upload each package individually with better error handling
+        for package in $(find dist-conda/ -name "*.tar.bz2" -o -name "*.conda"); do
+          if [[ -f "$package" ]]; then
+            echo "Uploading: $package"
+            echo "File size: $(ls -lh "$package" | awk '{print $5}')"
+            anaconda upload "$package" --label test --force --no-progress || {
+              echo "Failed to upload $package"
+              exit 1
+            }
+          else
+            echo "Warning: Package file not found: $package"
+          fi
         done
 
   publish-conda-production:
@@ -354,10 +346,22 @@ jobs:
         # Set the token for anaconda client
         export ANACONDA_API_TOKEN="${{ secrets.ANACONDA_API_TOKEN }}"
         
-        # Find and upload all conda packages to main channel
-        find dist-conda/ -name "*.tar.bz2" -o -name "*.conda" | while read package; do
-          echo "Uploading: $package"
-          anaconda upload "$package" --force --no-progress
+        # List packages to upload
+        echo "Found packages:"
+        find dist-conda/ -name "*.tar.bz2" -o -name "*.conda"
+        
+        # Upload each package individually with better error handling
+        for package in $(find dist-conda/ -name "*.tar.bz2" -o -name "*.conda"); do
+          if [[ -f "$package" ]]; then
+            echo "Uploading: $package"
+            echo "File size: $(ls -lh "$package" | awk '{print $5}')"
+            anaconda upload "$package" --force --no-progress || {
+              echo "Failed to upload $package"
+              exit 1
+            }
+          else
+            echo "Warning: Package file not found: $package"
+          fi
         done
 
   create-release:
