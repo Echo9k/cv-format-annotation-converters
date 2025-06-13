@@ -260,23 +260,57 @@ jobs:
       )
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        # Skip Windows on pull requests to save CI time
+        os: ${{ github.event_name == 'pull_request' && fromJSON('["ubuntu-24.04", "macos-latest"]') || fromJSON('["ubuntu-24.04", "macos-latest", "windows-2019"]') }}
+      fail-fast: false
     
     steps:
     - uses: actions/checkout@v4
 
-    - name: Setup Miniconda
+    - name: Cache conda packages
+      uses: actions/cache@v4
+      with:
+        path: ~/conda_pkgs_dir
+        key: ${{ runner.os }}-conda-${{ hashFiles('environment*.yml') }}
+        restore-keys: |
+          ${{ runner.os }}-conda-
+
+    - name: Setup Miniconda (Windows optimized)
+      if: runner.os == 'Windows'
+      uses: conda-incubator/setup-miniconda@v3
+      with:
+        auto-update-conda: false  # Skip update to save time
+        python-version: '3.11'
+        miniforge-version: latest  # Faster than full Anaconda
+        environment-file: environment-windows.yml
+        activate-environment: cvannotate-windows
+        use-mamba: true  # Much faster package resolver
+
+    - name: Setup Miniconda (Unix)
+      if: runner.os != 'Windows'
       uses: conda-incubator/setup-miniconda@v3
       with:
         auto-update-conda: true
         python-version: '3.11'
+        miniforge-version: latest
         channels: conda-forge,defaults
         channel-priority: true
+        use-mamba: true
 
-    - name: Install conda-build
+    - name: Verify installation (Windows)
+      if: runner.os == 'Windows'
+      shell: cmd /C CALL {0}
+      run: |
+        call conda activate cvannotate-windows
+        conda info
+        conda list
+        where mamba
+
+    - name: Install conda-build (Unix)
+      if: runner.os != 'Windows'
       shell: bash -l {0}
       run: |
-        conda install conda-build anaconda-client
+        mamba install conda-build anaconda-client -y
         conda info
         conda list
 
@@ -306,9 +340,18 @@ jobs:
           sed -i.bak "s/{% set version = .* %}/{% set version = \"$VERSION\" %}/" conda-recipe/meta.yaml
         fi
 
-    - name: Build conda package
+    - name: Build conda package (Windows)
+      if: runner.os == 'Windows'
+      shell: cmd /C CALL {0}
+      timeout-minutes: 15  # Reduced timeout for Windows
+      run: |
+        call conda activate cvannotate-windows
+        .\scripts\build-conda-ci-simple.sh
+
+    - name: Build conda package (Unix)
+      if: runner.os != 'Windows'
       shell: bash -l {0}
-      timeout-minutes: 30
+      timeout-minutes: 12  # Reduced timeout for Unix
       run: |
         # Use the cross-platform build script that handles path detection
         ./scripts/build-conda-ci-simple.sh
