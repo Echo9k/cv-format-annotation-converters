@@ -8,7 +8,7 @@ package:
 # NOTE: For conda-forge submission, this should point to PyPI (pypi.org)
 # Currently using test-pypi for development/testing
 source:
-  url: https://test-files.pythonhosted.org/packages/3a/e66bd39c8703881cffd1070cbfd20a9d56c76bdb9c5112ffee793124edcb/cvannotate-1.0.0.tar.gz
+  url: https://test-files.pythonhosted.org/packages/09/3a/e66bd39c8703881cffd1070cbfd20a9d56c76bdb9c5112ffee793124edcb/cvannotate-1.0.0.tar.gz
   sha256: 7a59356838d987ac3da9f8b965bff9d80e0c1914390df4233b75c8125126fb8c
 
 build:
