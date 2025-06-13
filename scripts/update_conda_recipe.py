@@ -76,12 +76,10 @@ def update_conda_recipe(recipe_path: Path, package_info: dict, package_name: str
     
     # Update URL (handle both test-pypi and regular pypi patterns)
     if 'test-files.pythonhosted.org' in package_info['url']:
-        # Extract the path components for test-pypi
-        url_parts = package_info['url'].split('/')
-        path_part = '/'.join(url_parts[5:])  # Skip https://test-files.pythonhosted.org/packages/
-        new_url = f"https://test-files.pythonhosted.org/packages/{path_part}"
+        # Use the full test-pypi URL directly
+        new_url = package_info['url']
     else:
-        # Regular PyPI URL pattern
+        # Regular PyPI URL with template variables for conda-forge
         new_url = f"https://pypi.io/packages/source/{{{{ name[0] }}}}/{{{{ name }}}}/{package_info['filename']}"
     
     # Replace URL line
