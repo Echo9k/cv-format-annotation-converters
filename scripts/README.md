@@ -1,6 +1,52 @@
 # Scripts Directory
 
-This directory contains utility scripts for development, testing, and CI/CD operations.
+This directory contains utility scripts for development, testing, CI/CD operations, and **conda recipe automation**.
+
+## Conda Recipe Automation 🚀
+
+### 🐍 `update_conda_recipe.py`
+Python script that fetches package information from PyPI/test-PyPI and updates the conda recipe automatically.
+
+**Features:**
+- Fetches latest or specific version information
+- Supports both PyPI and test-PyPI
+- Updates version, URL, and SHA256 hash automatically
+- Dry-run mode for testing
+- Detailed error handling
+
+**Usage:**
+```bash
+# Update to latest version from PyPI
+python scripts/update_conda_recipe.py cvannotate
+
+# Update to specific version from test-PyPI
+python scripts/update_conda_recipe.py cvannotate --version 1.0.0 --test-pypi
+
+# Dry run to see what would be changed
+python scripts/update_conda_recipe.py cvannotate --dry-run
+```
+
+### 🔧 `update_recipe.sh`
+Bash wrapper script for easier command-line usage.
+
+**Usage:**
+```bash
+# Update to latest version
+./scripts/update_recipe.sh
+
+# Update specific package and version
+./scripts/update_recipe.sh cvannotate 1.0.0
+
+# Use test-PyPI
+./scripts/update_recipe.sh cvannotate 1.0.0 --test-pypi
+```
+
+### 🤖 GitHub Actions Integration
+The workflow `.github/workflows/update-conda-recipe.yml` automatically:
+1. **Triggers on new GitHub releases**
+2. **Fetches PyPI information** for the released version  
+3. **Updates conda recipe** with new version and hash
+4. **Creates a Pull Request** with the changes
 
 ## Build Scripts
 
