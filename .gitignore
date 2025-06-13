@@ -1,6 +1,84 @@
-__pycache__/*
-tests/__pycache__/*
-cvannotate.egg-info/
-cvannotate/__pycache__
-cvannotate/converters/__pycache__
-*.ini
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+pytest.ini
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# Conda specific
+conda-recipe/meta.yaml.bak*
+dist-conda/
+dist-conda-test/
+conda_build.log
+
+# Development
+bandit-report.json
+*github-test-backup
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+.spyderproject
+.spyproject
+
+# OS files
+.DS_Store
+Thumbs.db
+.directory
+
+# Temporary files
+*.tmp
+*.log
+.cache/
+
+# Additional build artifacts
+*.whl
+*.tar.gz
+*.zip
+
+# Jupyter notebooks (if any are added)
+.ipynb_checkpoints/
+
+# macOS
+.AppleDouble
+.LSOverride
+
+# Environment files
+.env
+.env.local
+.env.*.local

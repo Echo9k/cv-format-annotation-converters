@@ -1,25 +1,30 @@
 # CVAnnotate - Annotation Format Converters
 
-# CVAnnotate - Annotation Format Converters
-
 [![CI/CD Pipeline](https://github.com/Echo9k/cv-format-annotation-converters/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/Echo9k/cv-format-annotation-converters/actions)
 [![PyPI version](https://badge.fury.io/py/cvannotate.svg)](https://badge.fury.io/py/cvannotate)
-[![Python versions](https://img.shields.io/pypi/pyversions/cvannotate.svg)](https://pypi.org/project/cvannotate/)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![codecov](https://codecov.io/gh/Echo9k/cv-format-annotation-converters/branch/main/graph/badge.svg)](https://codecov.io/gh/Echo9k/cv-format-annotation-converters)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub release](https://img.shields.io/github/v/release/Echo9k/cv-format-annotation-converters)](https://github.com/Echo9k/cv-format-annotation-converters/releases)
+[![GitHub CI](https://github.com/Echo9k/cv-format-annotation-converters/workflows/CI/badge.svg)](https://github.com/Echo9k/cv-format-annotation-converters/actions)
+[![Conda Version](https://img.shields.io/conda/vn/conda-forge/cvannotate.svg)](https://anaconda.org/conda-forge/cvannotate)
 
 This repository covers all formats of annotations for Object Detection and can easily convert from one form to another using the `cvannotate` Python package.
+
+> **✨ v1.0.0 Stable Release** - Production-ready with comprehensive testing and CI/CD pipeline.
 
 ## Installation
 
 ### PyPI (Recommended)
 
-Install from PyPI:
+Install the stable release from PyPI:
 ```bash
 pip install cvannotate
 ```
 
-### Test PyPI (Latest Development)
+### Development Version
 
+For the latest development features:
 ```bash
 pip install -i https://test.pypi.org/simple/ cvannotate
 ```
@@ -51,13 +56,11 @@ pip install -e .
 
 ### CLI Usage
 
-Convert annotations between different formats:
-
 ```bash
 # Convert YOLO to VOC format
 cvannotate convert -i annotations.txt --from-format yolo -f voc -w 640 --height 480 -c classes.txt
 
-# Convert VOC to COCO format
+# Convert VOC to COCO format  
 cvannotate convert -i annotations.xml --from-format voc -f coco -c classes.txt
 
 # Convert COCO to YOLO format
@@ -70,46 +73,44 @@ cvannotate convert -i annotations.json --from-format coco -f yolo -w 640 --heigh
 from cvannotate import convert
 from pathlib import Path
 
-# Read annotations
+# Example 1: YOLO → VOC conversion
 annotations = convert.read_annotation(
-    Path("annotations.txt"), 
+    Path("data/labels.txt"), 
     "yolo", 
     width=640, 
     height=480
 )
-
-# Write in different format
 convert.write_annotation(
     annotations, 
     Path("output/"), 
     "voc", 
     ["person", "car", "bicycle"]
 )
+
+# Example 2: Batch conversion
+import os
+from cvannotate.cli import main
+
+# Convert entire directory
+os.system("cvannotate convert -i dataset/labels/ --from-format yolo -f coco -c classes.txt")
 ```
 
-All computer vision problems require annotated datasets and for training deep neural networks data needs to be annotated in defined form. For Object Detection, there are many available formats for preparing and annotating your dataset but the most popular and used formats are Pascal VOC and Microsoft COCO.
+## Common Use Cases
 
-### MS COCO ###
-COCO is large scale images with Common Objects in Context (COCO) for object detection, segmentation, and captioning data set. COCO has 1.5 million object instances for 80 object categories. COCO stores annotations in a JSON file.\
-COCO Bounding box: _(x-top left, y-top left, width, height)_
+### Dataset Conversion for Training
+```bash
+# Convert YOLO dataset to COCO for frameworks like Detectron2
+cvannotate convert -i train.txt --from-format yolo -f coco -w 640 --height 480 -c classes.txt
 
-### Pascal VOC ###
-Pascal Visual Object Classes(VOC) provides standardized image data sets for object detection. Pascal VOC is an XML file, unlike COCO which has a JSON file.\
-Pascal VOC Bounding box :_(xmin-top left, ymin-top left, xmax-bottom right, ymax-bottom right)_
+# Convert VOC XML files to YOLO for frameworks like YOLOv5/v8  
+cvannotate convert -i annotations.xml --from-format voc -f yolo -w 416 --height 416 -c classes.txt
+```
 
-### Darknet YOLO ###
-YOLO reads or predicts bounding boxes in different format compared to VOC or COCO.\
-YOLO Bounding box : _(x_center, y_center, width, height)_ --> all these coordinates are normalized with respect to image width & height.
-
-In Pascal VOC and YOLO we create a file for each of the image in the dataset. In COCO we have one file each, for entire dataset for training, testing and validation.
-
-Usually, when working on custom datasets we end up wasting lot of time in converting annotations from one format to another suitable to object detection models or frameworks. This is really frustrating and I compiled few annotations converter scripts which covers most of the cases and saves you time! You can now focus more on productive tasks such as improving model performance or training more efficiently.
-
-## Supported Formats
-
-- **YOLO**: Text files with normalized coordinates
-- **Pascal VOC**: XML files with absolute coordinates  
-- **MS COCO**: JSON files with bounding box annotations
+### Validation and Testing
+```bash
+# Convert predictions back to original format for evaluation
+cvannotate convert -i predictions.json --from-format coco -f yolo -w 640 --height 480 -c classes.txt
+```
 
 ## Features
 
@@ -120,14 +121,31 @@ Usually, when working on custom datasets we end up wasting lot of time in conver
 - ✅ **Testing**: Comprehensive test suite with >90% coverage
 - ✅ **Documentation**: Well-documented code and examples
 
-## Development
+## Documentation
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
+- 📖 [Installation Guide](INSTALLATION.md)
+- 🛠️ [Development Guide](DEVELOPMENT.md)  
+- 🤝 [Contributing Guidelines](CONTRIBUTING.md)
+- 📦 [Technical Documentation](docs/technical/)
+
+## Supported Formats
+
+- **YOLO**: Normalized center coordinates _(x_center, y_center, width, height)_
+- **Pascal VOC**: Corner coordinates _(xmin, ymin, xmax, ymax)_ in XML
+- **MS COCO**: Top-left coordinates _(x, y, width, height)_ in JSON
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Contributing
+
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
 
 ### Local Development Setup
 
 ```bash
-git clone https://github.com/USERNAME/cv-format-annotation-converters.git
+git clone https://github.com/Echo9k/cv-format-annotation-converters.git
 cd cv-format-annotation-converters
 pip install -e .
 pip install -r requirements-dev.txt
@@ -139,47 +157,3 @@ pre-commit install
 ```bash
 pytest tests/ -v --cov=cvannotate
 ```
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Contributing
-
-Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-## Scripts ##
-
-* **JSON_to_txt.py**
-  * It converts MS COCO JSON file to a text file for each image and the format is _{class_id, x_min, y_min, width, height}_
-
-
-* **Yolo_to_Voc.py**
-   * It converts YOLO text files to Pascal VOC format XML files
-   * _(x_c_n, y_c_n, width_n, height_n) --> (x_min, y_min, x_max, y_max)_
-
-* **XML_to_JSON.py** &&  **voc2coco.py**
-  * These python scripts convert all XML files of a dataset into MS COCO readable JSON file.\
-    `python XML_to_JSON.py ./annotations_dir/  ./json_dest_dir/coco_output.json`
-
-* **gt_yolo2json.py**  && **pred_yolo2json.py**
-  * It converts all YOLO text files into MS COCO readable JSON file.
-  * For ground truth YOLO text files --> gt_yolo2json.py
-  * For YOLO predicted text files --> pred_yolo2json.py
-
-* **cocoGT_to_Yolo.py**
-  * It converts MS COCO ground truth text files to YOLO format. It also has a function to convert YOLO text files to VOC format. Feel free to change the code and switch between the functions.
-  
-* **JSON --> VOC XML files**
-  * Json2PascalVoc is a Python library for converting some special Json strings to PascalVOC format XML files.\
-   `pip install Json2PascalVoc`
-   ```
-   from Json2PascalVoc.Converter import Converter
-      
-   myConverter = Converter()
-   #returns a Converter Object
-   myConverter.convertJsonToPascal("data.json")
-   #Converts Json to PascalVOC XML and saves the XML file to the related file path
-   ```
-   
-   

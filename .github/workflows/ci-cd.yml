@@ -6,10 +6,36 @@ on:
     tags: [ 'v*' ]
   pull_request:
     branches: [ main, develop ]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build (e.g., 1.0.0). Leave empty to use version from pyproject.toml'
+        required: false
+        type: string
+        default: ''
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: choice
+        options:
+          - 'test'
+          - 'production'
+        default: 'test'
+      skip_tests:
+        description: 'Skip test execution (for emergency deployments)'
+        required: false
+        type: boolean
+        default: false
+      conda_only:
+        description: 'Build conda packages only (skip PyPI)'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    if: ${{ !github.event.inputs.skip_tests || github.event.inputs.skip_tests == 'false' }}
     strategy:
       matrix:
         python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
@@ -18,12 +44,12 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
 
     - name: Cache pip dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/.cache/pip
         key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml', '**/requirements*.txt') }}
@@ -42,7 +68,7 @@ jobs:
 
     - name: Upload coverage to Codecov
       if: matrix.python-version == '3.11'
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         file: ./coverage.xml
         flags: unittests
@@ -51,11 +77,12 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
+    if: ${{ !github.event.inputs.skip_tests || github.event.inputs.skip_tests == 'false' }}
     steps:
     - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
 
@@ -85,11 +112,12 @@ jobs:
 
   security:
     runs-on: ubuntu-latest
+    if: ${{ !github.event.inputs.skip_tests || github.event.inputs.skip_tests == 'false' }}
     steps:
     - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
 
@@ -110,11 +138,12 @@ jobs:
   package-test:
     runs-on: ubuntu-latest
     needs: [test, lint]
+    if: ${{ always() && (!github.event.inputs.skip_tests || github.event.inputs.skip_tests == 'false') && (needs.test.result == 'success' || needs.test.result == 'skipped') && (needs.lint.result == 'success' || needs.lint.result == 'skipped') }}
     steps:
     - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
 
@@ -139,13 +168,25 @@ jobs:
   publish-test-pypi:
     runs-on: ubuntu-latest
     needs: [test, lint, security, package-test]
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/tags/'))
-    environment: test-pypi
+    if: |
+      always() && 
+      (needs.test.result == 'success' || needs.test.result == 'skipped') && 
+      (needs.lint.result == 'success' || needs.lint.result == 'skipped') && 
+      (needs.security.result == 'success' || needs.security.result == 'skipped') && 
+      (needs.package-test.result == 'success' || needs.package-test.result == 'skipped') &&
+      !github.event.inputs.conda_only &&
+      (
+        (github.event_name == 'push' && (github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/tags/'))) ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'test')
+      )
+    environment: 
+      name: pypi-test
+      url: https://test.pypi.org/project/cvannotate/
     steps:
     - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
 
@@ -168,13 +209,25 @@ jobs:
   publish-pypi:
     runs-on: ubuntu-latest
     needs: [test, lint, security, package-test]
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    environment: production
+    if: |
+      always() && 
+      (needs.test.result == 'success' || needs.test.result == 'skipped') && 
+      (needs.lint.result == 'success' || needs.lint.result == 'skipped') && 
+      (needs.security.result == 'success' || needs.security.result == 'skipped') && 
+      (needs.package-test.result == 'success' || needs.package-test.result == 'skipped') &&
+      !github.event.inputs.conda_only &&
+      (
+        (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+      )
+    environment: 
+      name: pypi-production
+      url: https://pypi.org/project/cvannotate/
     steps:
     - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
 
@@ -195,7 +248,16 @@ jobs:
   build-conda:
     runs-on: ${{ matrix.os }}
     needs: [test, lint, security, package-test]
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/tags/'))
+    if: |
+      always() && 
+      (needs.test.result == 'success' || needs.test.result == 'skipped') && 
+      (needs.lint.result == 'success' || needs.lint.result == 'skipped') && 
+      (needs.security.result == 'success' || needs.security.result == 'skipped') && 
+      (needs.package-test.result == 'success' || needs.package-test.result == 'skipped') &&
+      (
+        (github.event_name == 'push' && (github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/tags/'))) ||
+        (github.event_name == 'workflow_dispatch')
+      )
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
@@ -221,11 +283,16 @@ jobs:
     - name: Update conda recipe version
       shell: bash -l {0}
       run: |
-        # Extract version from pyproject.toml or tag
-        if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+        # Extract version from manual input, tag, or pyproject.toml
+        if [[ -n "${{ github.event.inputs.version }}" ]]; then
+          VERSION="${{ github.event.inputs.version }}"
+          echo "Using manual version: $VERSION"
+        elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
           VERSION=${GITHUB_REF#refs/tags/v}
+          echo "Using tag version: $VERSION"
         else
           VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "//' | sed 's/"//')
+          echo "Using pyproject.toml version: $VERSION"
         fi
         
         echo "Building conda package for version: $VERSION"
@@ -241,18 +308,13 @@ jobs:
 
     - name: Build conda package
       shell: bash -l {0}
+      timeout-minutes: 30
       run: |
-        # Create output directory
-        mkdir -p dist-conda
-        
-        # Build the package
-        conda-build conda-recipe/ --output-folder dist-conda/
-        
-        echo "Built packages:"
-        find dist-conda/ -name "*.tar.bz2" -o -name "*.conda" | head -10
+        # Use the cross-platform build script that handles path detection
+        ./scripts/build-conda-ci-simple.sh
 
     - name: Upload conda package artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: conda-packages-${{ matrix.os }}
         path: dist-conda/
@@ -260,8 +322,16 @@ jobs:
   publish-conda-test:
     runs-on: ubuntu-latest
     needs: [build-conda]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-    environment: conda-test
+    if: |
+      always() && 
+      needs.build-conda.result == 'success' &&
+      (
+        (github.event_name == 'push' && github.ref == 'refs/heads/develop') ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'test')
+      )
+    environment: 
+      name: conda-test
+      url: https://anaconda.org/${{ vars.ANACONDA_USERNAME }}/cvannotate
     
     steps:
     - uses: actions/checkout@v4
@@ -273,35 +343,60 @@ jobs:
         python-version: '3.11'
 
     - name: Download conda packages
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
+        pattern: conda-packages-*
         path: dist-conda/
+        merge-multiple: true
 
     - name: Install anaconda-client
       shell: bash -l {0}
-      run: conda install anaconda-client
+      run: |
+        conda install anaconda-client -c conda-forge
+        anaconda --version
 
     - name: Upload to anaconda.org test channel
       shell: bash -l {0}
+      env:
+        ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_API_TOKEN }}
       run: |
-        # Login to anaconda.org
-        echo "${{ secrets.ANACONDA_API_TOKEN }}" | anaconda login --username ${{ secrets.ANACONDA_USERNAME }} --stdin
-        
         echo "Uploading packages to test channel..."
         
-        # Find and upload all conda packages to test label
-        find dist-conda/ -name "*.tar.bz2" -o -name "*.conda" | while read package; do
-          echo "Uploading: $package"
-          anaconda upload "$package" --label test --force --no-progress
-        done
+        # Set the token for anaconda client
+        export ANACONDA_API_TOKEN="${{ secrets.ANACONDA_API_TOKEN }}"
         
-        anaconda logout
+        # List packages to upload
+        echo "Found packages:"
+        find dist-conda/ -name "*.tar.bz2" -o -name "*.conda"
+        
+        # Upload each package individually with better error handling
+        for package in $(find dist-conda/ -name "*.tar.bz2" -o -name "*.conda"); do
+          if [[ -f "$package" ]]; then
+            echo "Uploading: $package"
+            echo "File size: $(ls -lh "$package" | awk '{print $5}')"
+            anaconda upload "$package" --label test --force --no-progress || {
+              echo "Failed to upload $package"
+              exit 1
+            }
+          else
+            echo "Warning: Package file not found: $package"
+          fi
+        done
 
   publish-conda-production:
     runs-on: ubuntu-latest
     needs: [build-conda, publish-pypi]
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    environment: conda-production
+    if: |
+      always() && 
+      needs.build-conda.result == 'success' &&
+      (needs.publish-pypi.result == 'success' || needs.publish-pypi.result == 'skipped') &&
+      (
+        (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+      )
+    environment: 
+      name: conda-production
+      url: https://anaconda.org/conda-forge/cvannotate
     
     steps:
     - uses: actions/checkout@v4
@@ -313,34 +408,57 @@ jobs:
         python-version: '3.11'
 
     - name: Download conda packages
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
+        pattern: conda-packages-*
         path: dist-conda/
+        merge-multiple: true
 
     - name: Install anaconda-client
       shell: bash -l {0}
-      run: conda install anaconda-client
+      run: |
+        conda install anaconda-client -c conda-forge
+        anaconda --version
 
     - name: Upload to anaconda.org main channel
       shell: bash -l {0}
+      env:
+        ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_API_TOKEN }}
       run: |
-        # Login to anaconda.org
-        echo "${{ secrets.ANACONDA_API_TOKEN }}" | anaconda login --username ${{ secrets.ANACONDA_USERNAME }} --stdin
-        
         echo "Uploading packages to main channel..."
         
-        # Find and upload all conda packages to main channel
-        find dist-conda/ -name "*.tar.bz2" -o -name "*.conda" | while read package; do
-          echo "Uploading: $package"
-          anaconda upload "$package" --force --no-progress
-        done
+        # Set the token for anaconda client
+        export ANACONDA_API_TOKEN="${{ secrets.ANACONDA_API_TOKEN }}"
         
-        anaconda logout
+        # List packages to upload
+        echo "Found packages:"
+        find dist-conda/ -name "*.tar.bz2" -o -name "*.conda"
+        
+        # Upload each package individually with better error handling
+        for package in $(find dist-conda/ -name "*.tar.bz2" -o -name "*.conda"); do
+          if [[ -f "$package" ]]; then
+            echo "Uploading: $package"
+            echo "File size: $(ls -lh "$package" | awk '{print $5}')"
+            anaconda upload "$package" --force --no-progress || {
+              echo "Failed to upload $package"
+              exit 1
+            }
+          else
+            echo "Warning: Package file not found: $package"
+          fi
+        done
 
   create-release:
     runs-on: ubuntu-latest
     needs: [publish-pypi, publish-conda-production]
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    if: |
+      always() && 
+      (needs.publish-pypi.result == 'success' || needs.publish-pypi.result == 'skipped') &&
+      (needs.publish-conda-production.result == 'success' || needs.publish-conda-production.result == 'skipped') &&
+      (
+        (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+      )
     steps:
     - uses: actions/checkout@v4
 
@@ -349,14 +467,14 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref_name }}
-        release_name: Release ${{ github.ref_name }}
+        tag_name: ${{ github.event.inputs.version && format('v{0}', github.event.inputs.version) || github.ref_name }}
+        release_name: Release ${{ github.event.inputs.version && format('v{0}', github.event.inputs.version) || github.ref_name }}
         draft: false
         prerelease: false
         body: |
           ## Changes in this Release
-          - Released version ${{ github.ref_name }} to PyPI
-          - Released version ${{ github.ref_name }} to Anaconda.org (conda-forge)
+          - Released version ${{ github.event.inputs.version && format('v{0}', github.event.inputs.version) || github.ref_name }} to PyPI
+          - Released version ${{ github.event.inputs.version && format('v{0}', github.event.inputs.version) || github.ref_name }} to Anaconda.org (conda-forge)
           - See commits for detailed changes
           
           ## Installation
@@ -368,7 +486,7 @@ jobs:
           
           ### Via Conda
           ```bash
-          conda install -c ${{ secrets.ANACONDA_USERNAME }} cvannotate
+          conda install -c ${{ vars.ANACONDA_USERNAME }} cvannotate
           # or with mamba
-          mamba install -c ${{ secrets.ANACONDA_USERNAME }} cvannotate
+          mamba install -c ${{ vars.ANACONDA_USERNAME }} cvannotate
           ```
