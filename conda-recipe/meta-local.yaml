@@ -5,15 +5,14 @@ package:
   name: {{ name|lower }}
   version: {{ version }}
 
-# NOTE: For conda-forge submission, this should point to PyPI (pypi.org)
-# Currently using test-pypi for development/testing
+# For local development - uses local source code
 source:
-  url: https://test-files.pythonhosted.org/packages/3a/e66bd39c8703881cffd1070cbfd20a9d56c76bdb9c5112ffee793124edcb/cvannotate-1.0.0.tar.gz
-  sha256: 7a59356838d987ac3da9f8b965bff9d80e0c1914390df4233b75c8125126fb8c
+  path: ../
 
 build:
   number: 0
   noarch: python
+  script: {{ PYTHON }} -m pip install . -vv
   entry_points:
     - cvannotate = cvannotate.cli:main
 
@@ -56,8 +55,3 @@ about:
 extra:
   recipe-maintainers:
     - guillermo-alcantara  # Replace with actual conda-forge username
-  dev_url: https://github.com/Echo9k/cv-format-annotation-converters
-
-extra:
-  recipe-maintainers:
-    - Echo9k
