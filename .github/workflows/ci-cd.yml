@@ -6,10 +6,36 @@ on:
     tags: [ 'v*' ]
   pull_request:
     branches: [ main, develop ]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build (e.g., 1.0.0). Leave empty to use version from pyproject.toml'
+        required: false
+        type: string
+        default: ''
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: choice
+        options:
+          - 'test'
+          - 'production'
+        default: 'test'
+      skip_tests:
+        description: 'Skip test execution (for emergency deployments)'
+        required: false
+        type: boolean
+        default: false
+      conda_only:
+        description: 'Build conda packages only (skip PyPI)'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    if: ${{ !github.event.inputs.skip_tests || github.event.inputs.skip_tests == 'false' }}
     strategy:
       matrix:
         python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
@@ -51,6 +77,7 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
+    if: ${{ !github.event.inputs.skip_tests || github.event.inputs.skip_tests == 'false' }}
     steps:
     - uses: actions/checkout@v4
 
@@ -85,6 +112,7 @@ jobs:
 
   security:
     runs-on: ubuntu-latest
+    if: ${{ !github.event.inputs.skip_tests || github.event.inputs.skip_tests == 'false' }}
     steps:
     - uses: actions/checkout@v4
 
@@ -110,6 +138,7 @@ jobs:
   package-test:
     runs-on: ubuntu-latest
     needs: [test, lint]
+    if: ${{ always() && (!github.event.inputs.skip_tests || github.event.inputs.skip_tests == 'false') && (needs.test.result == 'success' || needs.test.result == 'skipped') && (needs.lint.result == 'success' || needs.lint.result == 'skipped') }}
     steps:
     - uses: actions/checkout@v4
 
@@ -139,8 +168,20 @@ jobs:
   publish-test-pypi:
     runs-on: ubuntu-latest
     needs: [test, lint, security, package-test]
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/tags/'))
-    environment: test-pypi
+    if: |
+      always() && 
+      (needs.test.result == 'success' || needs.test.result == 'skipped') && 
+      (needs.lint.result == 'success' || needs.lint.result == 'skipped') && 
+      (needs.security.result == 'success' || needs.security.result == 'skipped') && 
+      (needs.package-test.result == 'success' || needs.package-test.result == 'skipped') &&
+      !github.event.inputs.conda_only &&
+      (
+        (github.event_name == 'push' && (github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/tags/'))) ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'test')
+      )
+    environment: 
+      name: pypi-test
+      url: https://test.pypi.org/project/cvannotate/
     steps:
     - uses: actions/checkout@v4
 
@@ -168,8 +209,20 @@ jobs:
   publish-pypi:
     runs-on: ubuntu-latest
     needs: [test, lint, security, package-test]
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    environment: production
+    if: |
+      always() && 
+      (needs.test.result == 'success' || needs.test.result == 'skipped') && 
+      (needs.lint.result == 'success' || needs.lint.result == 'skipped') && 
+      (needs.security.result == 'success' || needs.security.result == 'skipped') && 
+      (needs.package-test.result == 'success' || needs.package-test.result == 'skipped') &&
+      !github.event.inputs.conda_only &&
+      (
+        (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+      )
+    environment: 
+      name: pypi-production
+      url: https://pypi.org/project/cvannotate/
     steps:
     - uses: actions/checkout@v4
 
@@ -195,7 +248,16 @@ jobs:
   build-conda:
     runs-on: ${{ matrix.os }}
     needs: [test, lint, security, package-test]
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/tags/'))
+    if: |
+      always() && 
+      (needs.test.result == 'success' || needs.test.result == 'skipped') && 
+      (needs.lint.result == 'success' || needs.lint.result == 'skipped') && 
+      (needs.security.result == 'success' || needs.security.result == 'skipped') && 
+      (needs.package-test.result == 'success' || needs.package-test.result == 'skipped') &&
+      (
+        (github.event_name == 'push' && (github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/tags/'))) ||
+        (github.event_name == 'workflow_dispatch')
+      )
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
@@ -221,11 +283,16 @@ jobs:
     - name: Update conda recipe version
       shell: bash -l {0}
       run: |
-        # Extract version from pyproject.toml or tag
-        if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+        # Extract version from manual input, tag, or pyproject.toml
+        if [[ -n "${{ github.event.inputs.version }}" ]]; then
+          VERSION="${{ github.event.inputs.version }}"
+          echo "Using manual version: $VERSION"
+        elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
           VERSION=${GITHUB_REF#refs/tags/v}
+          echo "Using tag version: $VERSION"
         else
           VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "//' | sed 's/"//')
+          echo "Using pyproject.toml version: $VERSION"
         fi
         
         echo "Building conda package for version: $VERSION"
@@ -255,8 +322,16 @@ jobs:
   publish-conda-test:
     runs-on: ubuntu-latest
     needs: [build-conda]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-    environment: conda-test
+    if: |
+      always() && 
+      needs.build-conda.result == 'success' &&
+      (
+        (github.event_name == 'push' && github.ref == 'refs/heads/develop') ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'test')
+      )
+    environment: 
+      name: conda-test
+      url: https://anaconda.org/${{ vars.ANACONDA_USERNAME }}/cvannotate
     
     steps:
     - uses: actions/checkout@v4
@@ -311,8 +386,17 @@ jobs:
   publish-conda-production:
     runs-on: ubuntu-latest
     needs: [build-conda, publish-pypi]
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    environment: conda-production
+    if: |
+      always() && 
+      needs.build-conda.result == 'success' &&
+      (needs.publish-pypi.result == 'success' || needs.publish-pypi.result == 'skipped') &&
+      (
+        (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+      )
+    environment: 
+      name: conda-production
+      url: https://anaconda.org/conda-forge/cvannotate
     
     steps:
     - uses: actions/checkout@v4
@@ -367,7 +451,14 @@ jobs:
   create-release:
     runs-on: ubuntu-latest
     needs: [publish-pypi, publish-conda-production]
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    if: |
+      always() && 
+      (needs.publish-pypi.result == 'success' || needs.publish-pypi.result == 'skipped') &&
+      (needs.publish-conda-production.result == 'success' || needs.publish-conda-production.result == 'skipped') &&
+      (
+        (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+      )
     steps:
     - uses: actions/checkout@v4
 
@@ -376,14 +467,14 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref_name }}
-        release_name: Release ${{ github.ref_name }}
+        tag_name: ${{ github.event.inputs.version && format('v{0}', github.event.inputs.version) || github.ref_name }}
+        release_name: Release ${{ github.event.inputs.version && format('v{0}', github.event.inputs.version) || github.ref_name }}
         draft: false
         prerelease: false
         body: |
           ## Changes in this Release
-          - Released version ${{ github.ref_name }} to PyPI
-          - Released version ${{ github.ref_name }} to Anaconda.org (conda-forge)
+          - Released version ${{ github.event.inputs.version && format('v{0}', github.event.inputs.version) || github.ref_name }} to PyPI
+          - Released version ${{ github.event.inputs.version && format('v{0}', github.event.inputs.version) || github.ref_name }} to Anaconda.org (conda-forge)
           - See commits for detailed changes
           
           ## Installation
@@ -395,7 +486,7 @@ jobs:
           
           ### Via Conda
           ```bash
-          conda install -c ${{ secrets.ANACONDA_USERNAME }} cvannotate
+          conda install -c ${{ vars.ANACONDA_USERNAME }} cvannotate
           # or with mamba
-          mamba install -c ${{ secrets.ANACONDA_USERNAME }} cvannotate
+          mamba install -c ${{ vars.ANACONDA_USERNAME }} cvannotate
           ```
